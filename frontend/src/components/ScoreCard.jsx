@@ -7,124 +7,122 @@ const getScoreColor = (score) => {
   return 'var(--score-partial)';
 };
 
-const getVerdictTag = (verdict) => {
+const getVerdictStyle = (verdict) => {
   const map = {
     'Strong Match': 'tag-green',
-    'Good Match': 'tag-blue',
-    'Partial Match': 'tag-orange',
-    'Weak Match': 'tag-red',
+    'Good Match':   'tag-blue',
+    'Partial Match':'tag-orange',
+    'Weak Match':   'tag-red',
   };
-  return map[verdict] || 'tag-blue';
+  return map[verdict] || 'tag-neutral';
 };
 
 export const ScoreCard = ({ matchResult, candidateProfile, processingTime }) => {
   const { matchScore, verdict, verdictReason, scoreBreakdown } = matchResult;
   const scoreColor = getScoreColor(matchScore);
-  const circumference = 2 * Math.PI * 54;
+  const r = 48;
+  const circumference = 2 * Math.PI * r;
   const dashOffset = circumference - (matchScore / 100) * circumference;
 
   return (
-    <div className="card fade-in" style={{
-      background: 'linear-gradient(145deg, #141b2d, #0d1220)',
-      borderColor: `${scoreColor}30`,
-      boxShadow: `0 4px 40px ${scoreColor}20`,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap' }}>
+    <div className="card fade-in" style={{ padding: '28px 32px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 32, flexWrap: 'wrap' }}>
 
-        {/* Circular Score */}
-        <div style={{ position: 'relative', width: 128, height: 128, flexShrink: 0 }}>
-          <svg width="128" height="128" viewBox="0 0 128 128">
-            <circle cx="64" cy="64" r="54"
-              fill="none" stroke="var(--border)" strokeWidth="10" />
-            <circle cx="64" cy="64" r="54"
-              fill="none"
-              stroke={scoreColor}
-              strokeWidth="10"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={dashOffset}
-              transform="rotate(-90 64 64)"
-              style={{ transition: 'stroke-dashoffset 1s ease' }}
-            />
-          </svg>
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-          }}>
+        {/* Score gauge */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          <div style={{ position: 'relative', width: 112, height: 112 }}>
+            <svg width="112" height="112" viewBox="0 0 112 112">
+              <circle cx="56" cy="56" r={r} fill="none" stroke="var(--border)" strokeWidth="8" />
+              <circle cx="56" cy="56" r={r}
+                fill="none"
+                stroke={scoreColor}
+                strokeWidth="8"
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={dashOffset}
+                transform="rotate(-90 56 56)"
+                style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)' }}
+              />
+            </svg>
             <div style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 30, fontWeight: 800,
-              color: scoreColor,
-              lineHeight: 1,
-            }}>{matchScore}</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>/100</div>
+              position: 'absolute', inset: 0,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <div style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 28, fontWeight: 700,
+                color: scoreColor,
+                lineHeight: 1,
+              }}>{matchScore}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>/100</div>
+            </div>
           </div>
+          <span className={`tag ${getVerdictStyle(verdict)}`}>{verdict}</span>
         </div>
 
-        {/* Details */}
-        <div style={{ flex: 1, minWidth: 200 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700 }}>
-              {candidateProfile.name}
-            </h2>
-            <span className={`tag ${getVerdictTag(verdict)}`}>{verdict}</span>
+        {/* Info */}
+        <div style={{ flex: 1, minWidth: 220 }}>
+          <div style={{ marginBottom: 12 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>{candidateProfile.name}</h2>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+              {candidateProfile.currentRole}
+              {candidateProfile.totalExperienceYears > 0 && ` · ${candidateProfile.totalExperienceYears} yr${candidateProfile.totalExperienceYears !== 1 ? 's' : ''} experience`}
+            </div>
           </div>
-          <div style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 14 }}>
-            {candidateProfile.currentRole} · {candidateProfile.totalExperienceYears} yrs exp
-          </div>
-          <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6, marginBottom: 16 }}>
+
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20, maxWidth: 540 }}>
             {verdictReason}
           </p>
 
-          {/* Breakdown bars */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 24px' }}>
+          {/* Score breakdown */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 32px' }}>
             {Object.entries(scoreBreakdown).map(([key, val]) => {
-              const labels = {
-                skillsMatch: { label: 'Skills', max: 40 },
-                experienceMatch: { label: 'Experience', max: 30 },
-                educationMatch: { label: 'Education', max: 15 },
-                overallFit: { label: 'Overall Fit', max: 15 },
+              const meta = {
+                skillsMatch:     { label: 'Skills Match',   max: 40 },
+                experienceMatch: { label: 'Experience',     max: 30 },
+                educationMatch:  { label: 'Education',      max: 15 },
+                overallFit:      { label: 'Overall Fit',    max: 15 },
               };
-              const { label, max } = labels[key] || { label: key, max: 100 };
+              const { label, max } = meta[key] || { label: key, max: 100 };
               const pct = Math.round((val / max) * 100);
               return (
                 <div key={key}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 3 }}>
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{label}</span>
-                    <span style={{ color: scoreColor, fontWeight: 700 }}>{val}/{max}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>{val}<span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>/{max}</span></span>
                   </div>
-                  <div style={{ height: 4, background: 'var(--border)', borderRadius: 2 }}>
-                    <div style={{
-                      height: '100%', width: `${pct}%`,
-                      background: scoreColor, borderRadius: 2,
-                      transition: 'width 1s ease',
-                    }} />
+                  <div className="progress-track">
+                    <div className="progress-fill" style={{ width: `${pct}%`, background: scoreColor }} />
                   </div>
                 </div>
               );
             })}
           </div>
         </div>
-      </div>
 
-      {/* Footer */}
-      <div style={{
-        marginTop: 20, paddingTop: 16,
-        borderTop: '1px solid var(--border)',
-        display: 'flex', gap: 16, flexWrap: 'wrap',
-      }}>
-        {[
-          { label: 'Email', val: candidateProfile.email || '—' },
-          { label: 'Location', val: candidateProfile.location || '—' },
-          { label: 'Education', val: candidateProfile.education?.[0]?.degree || '—' },
-          { label: 'Processed in', val: `${processingTime}s` },
-        ].map(({ label, val }) => (
-          <div key={label}>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</div>
-            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>{val}</div>
-          </div>
-        ))}
+        {/* Meta */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 14,
+          paddingLeft: 24,
+          borderLeft: '1px solid var(--border)',
+          minWidth: 140,
+          flexShrink: 0,
+        }}>
+          {[
+            { label: 'Email', val: candidateProfile.email || '—' },
+            { label: 'Location', val: candidateProfile.location || '—' },
+            { label: 'Education', val: candidateProfile.education?.[0]?.degree || '—' },
+            { label: 'Processed in', val: `${processingTime}s` },
+          ].map(({ label, val }) => (
+            <div key={label}>
+              <div className="info-label">{label}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2, wordBreak: 'break-all' }}>{val}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

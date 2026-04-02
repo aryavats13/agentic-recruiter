@@ -1,5 +1,5 @@
-// src/App.jsx — Root component
-import React from 'react';
+// src/App.jsx
+import React, { useState, useEffect } from 'react';
 import './styles/globals.css';
 import { Header } from './components/Header';
 import { UploadForm } from './components/UploadForm';
@@ -9,142 +9,162 @@ import { useAnalysis } from './hooks/useAnalysis';
 function App() {
   const { status, progress, result, error, activeTab, analyze, reset, setActiveTab, isLoading } = useAnalysis();
 
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'light';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(t => t === 'light' ? 'dark' : 'light');
+
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
-      <Header onReset={reset} hasResult={!!result} />
+    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', transition: 'background 0.25s ease' }}>
+      <Header onReset={reset} hasResult={!!result} theme={theme} onToggleTheme={toggleTheme} />
 
       <main style={{ paddingBottom: 80 }}>
 
-        {/* Hero — shown only when no result */}
+        {/* Hero */}
         {!result && (
           <div style={{
             background: 'var(--gradient-hero)',
             borderBottom: '1px solid var(--border)',
-            padding: '60px 0 52px',
-            textAlign: 'center',
+            padding: '64px 0 56px',
           }}>
             <div className="container">
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '6px 14px',
-                background: 'rgba(99,179,237,0.08)',
-                border: '1px solid rgba(99,179,237,0.2)',
-                borderRadius: 100,
-                marginBottom: 20,
-                fontSize: 12,
-                color: 'var(--accent-blue)',
-                fontWeight: 600,
-                letterSpacing: '0.06em',
-              }}>
-                ⚡ POWERED BY GEMINI AI · 4 SPECIALIZED AGENTS
-              </div>
-              <h1 style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(32px, 5vw, 52px)',
-                fontWeight: 800,
-                letterSpacing: '-0.03em',
-                lineHeight: 1.1,
-                marginBottom: 16,
-              }}>
-                Agentic Recruiter &<br />
-                <span style={{ background: 'var(--gradient-accent)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  Resume Optimizer
-                </span>
-              </h1>
-              <p style={{ color: 'var(--text-secondary)', fontSize: 17, maxWidth: 540, margin: '0 auto', lineHeight: 1.7 }}>
-                Upload any resume, paste a job description, and get a comprehensive AI-powered match score, 
-                optimization suggestions, and tailored interview questions — in under 60 seconds.
-              </p>
+              <div style={{ maxWidth: 600 }}>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '4px 12px',
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 4,
+                  marginBottom: 24,
+                  fontSize: 11,
+                  color: 'var(--text-muted)',
+                  fontWeight: 600,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                }}>
+                  AI-Powered · 5 Agents
+                </div>
 
-              {/* Feature pills */}
-              <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 8, marginTop: 28 }}>
-                {['Match Score 0–100', 'Skill Gap Analysis', 'ATS Optimization', 'Bullet Rewrites', 'Interview Questions'].map(f => (
-                  <span key={f} style={{
-                    padding: '5px 12px',
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 100,
-                    fontSize: 12,
-                    color: 'var(--text-muted)',
-                  }}>{f}</span>
-                ))}
+                <h1 style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 'clamp(36px, 5vw, 54px)',
+                  fontWeight: 700,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.1,
+                  marginBottom: 18,
+                  color: 'var(--text-primary)',
+                }}>
+                  Intelligent Resume<br />Analysis Platform
+                </h1>
+
+                <p style={{
+                  color: 'var(--text-secondary)',
+                  fontSize: 16,
+                  lineHeight: 1.7,
+                  maxWidth: 480,
+                  marginBottom: 36,
+                }}>
+                  Upload a resume, paste a job description, and get a comprehensive AI-powered evaluation — match score, skill gap analysis, optimization suggestions, interview preparation, and company intelligence.
+                </p>
+
+                <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+                  {[
+                    { label: 'Match Scoring', desc: 'Weighted 0–100 score' },
+                    { label: 'Gap Analysis', desc: 'Critical vs preferred skills' },
+                    { label: 'ATS Optimization', desc: 'Keyword recommendations' },
+                    { label: 'Interview Prep', desc: 'Role-specific questions' },
+                    { label: 'Company Intel', desc: 'Culture & salary insights' },
+                  ].map(({ label, desc }) => (
+                    <div key={label} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                      <div style={{
+                        width: 5, height: 5,
+                        borderRadius: '50%',
+                        background: 'var(--text-primary)',
+                        marginTop: 6,
+                        flexShrink: 0,
+                      }} />
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Main Content */}
         <div className="container" style={{ marginTop: 36 }}>
           {!result ? (
-            <div style={{ maxWidth: 700, margin: '0 auto' }}>
-
-              {/* Error Banner */}
+            <div style={{ maxWidth: 680, margin: '0 auto' }}>
               {error && (
                 <div style={{
-                  padding: '14px 18px',
-                  background: 'rgba(252,129,129,0.08)',
-                  border: '1px solid rgba(252,129,129,0.3)',
+                  padding: '12px 16px',
+                  background: 'rgba(220,38,38,0.06)',
+                  border: '1px solid rgba(220,38,38,0.2)',
                   borderRadius: 'var(--radius-md)',
                   color: 'var(--accent-red)',
                   marginBottom: 20,
-                  fontSize: 14,
+                  fontSize: 13,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 10,
+                  gap: 8,
                 }}>
-                  <span>⚠</span>
-                  <span>{error}</span>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                    <path d="M7 1a6 6 0 100 12A6 6 0 007 1zM6.5 4h1v4h-1V4zm0 5h1v1h-1V9z"/>
+                  </svg>
+                  {error}
                 </div>
               )}
 
               <div className="card">
-                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, marginBottom: 6 }}>
-                  Start Your Analysis
-                </h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 24 }}>
-                  Upload a PDF resume and paste the job description to run all 4 AI agents.
-                </p>
-                <UploadForm
-                  onSubmit={analyze}
-                  isLoading={isLoading}
-                  progress={progress}
-                />
+                <div style={{ marginBottom: 24 }}>
+                  <h2 style={{ fontSize: 20, marginBottom: 4 }}>New Analysis</h2>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+                    All five agents run automatically. Company name is optional.
+                  </p>
+                </div>
+                <UploadForm onSubmit={analyze} isLoading={isLoading} progress={progress} />
               </div>
 
-              {/* How it works */}
-              <div style={{ marginTop: 28, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+              {/* Process steps */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(5, 1fr)',
+                gap: 8,
+                marginTop: 20,
+              }}>
                 {[
-                  { n: '01', title: 'Parse', desc: 'PDF text extraction & profile structuring' },
-                  { n: '02', title: 'Match', desc: 'Skill & experience scoring against JD' },
-                  { n: '03', title: 'Optimize', desc: 'Bullet rewrites, keywords & ATS tips' },
-                  { n: '04', title: 'Interview', desc: 'Tailored Q&A guide for the hiring team' },
-                ].map(({ n, title, desc }) => (
+                  { n: '01', label: 'Parse' },
+                  { n: '02', label: 'Match' },
+                  { n: '03', label: 'Optimize' },
+                  { n: '04', label: 'Interview' },
+                  { n: '05', label: 'Company' },
+                ].map(({ n, label }) => (
                   <div key={n} style={{
-                    padding: '16px',
+                    padding: '12px 10px',
                     background: 'var(--bg-card)',
                     border: '1px solid var(--border)',
                     borderRadius: 'var(--radius-md)',
                     textAlign: 'center',
                   }}>
-                    <div style={{
-                      fontFamily: 'var(--font-display)',
-                      fontSize: 11, fontWeight: 800,
-                      color: 'var(--accent-blue)',
-                      letterSpacing: '0.1em',
-                      marginBottom: 6,
-                    }}>{n}</div>
-                    <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{title}</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>{desc}</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em', marginBottom: 3 }}>{n}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</div>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <ResultsPanel
-              result={result}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-            />
+            <ResultsPanel result={result} activeTab={activeTab} setActiveTab={setActiveTab} />
           )}
         </div>
       </main>
